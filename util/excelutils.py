@@ -106,7 +106,7 @@ def addSeries(name, firstRow, startRow, col, chart, sheetName):
 def writeDetail(repo, workbook):
     print(f"Write Detail for {repo['repo']}")
     currentSheet = createSheet(workbook, repo['repo'])
-    header = ['Number', 'State', 'Level', 'Create Date', 'Fixed Date', 'Url']
+    header = ['Number', 'State', 'Level', 'Create Date', 'Fixed Date', 'Dismiss Date', 'Dismiss By','Url', 'Dismiss Note']
 
     cell_format = workbook.add_format({
         'bold': True,
@@ -118,16 +118,19 @@ def writeDetail(repo, workbook):
     for i, value in enumerate(header):
         currentSheet.write(0, i, value, cell_format)
     currentSheet.set_column(0, 2, 10)
-    currentSheet.set_column(3, 4, 20)
-    currentSheet.set_column(5, 5, 75)
+    currentSheet.set_column(3, 6, 20)
+    currentSheet.set_column(7, 8, 75)
 
     contents = []
     for item in repo['items']:
         fixedDate = ''
         if item['fixedDate'] is not None:
             fixedDate = item['fixedDate'].strftime('%y-%m-%d %H:%M:%S')
+        dismissDate = ''
+        if item['dismissedDate'] is not None:
+            dismissDate = item['dismissedDate'].strftime('%y-%m-%d %H:%M:%S')
         createDate = item['createDate'].strftime('%y-%m-%d %H:%M:%S')
-        temp_row = [item['number'],item['state'],item['security_severity_level'], createDate, fixedDate, item['url']]
+        temp_row = [item['number'],item['state'],item['security_severity_level'], createDate, fixedDate, dismissDate, item['dismissedBy'] ,item['url'], item['dismissedReason']]
         contents.append(temp_row)
     for i, row in enumerate(contents, start=1):
         for j, value in enumerate(row):

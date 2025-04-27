@@ -61,7 +61,9 @@ def summarizeIssue(items):
         for item in items:
             if item['state'] == 'open':
                 addCount(item, temp_obj['open'])
-            elif item['fixedDate'] > dateTemp:
+            elif item['fixedDate'] and item['fixedDate'] > dateTemp:
+                addCount(item, temp_obj['open'])
+            elif item['dismissedDate'] and item['dismissedDate'] > dateTemp:
                 addCount(item, temp_obj['open'])
             else:
                 addCount(item, temp_obj['close'])

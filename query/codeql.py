@@ -41,13 +41,20 @@ def calIssueCount(items, repo):
             data['openCount'] += 1
         else:
             data['closeCount'] += 1
+        
+        dismissedBy = ''
 
+        if alert['state'] == 'dismissed':
+            dismissedBy = alert['dismissed_by']['login']
         item = {
             'number': alert['number'],
             'state':alert['state'],
             'url':alert['html_url'],
             'createDate':parseDate(alert['created_at']),
             'fixedDate':parseDate(alert['fixed_at']),
+            'dismissedDate': parseDate(alert['dismissed_at']),
+            'dismissedReason': alert['dismissed_comment'],
+            'dismissedBy': dismissedBy,
             'security_severity_level': alert['rule']['security_severity_level']
         }
         data['items'].append(item)
