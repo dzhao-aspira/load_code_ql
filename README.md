@@ -7,18 +7,6 @@ Need config Advanced system settings
 Generate exe file
     install dependancy 
         pip install -r requirements.txt
-
-    generate main.spec
-        pyinstaller --onefile main.py
-
-    update main.spec
-        a = Analysis(
-            ['main.py'],
-            pathex=[],
-            binaries=[],
-            datas=[('config/config.properties', 'config/config.properties')],
-            ...
-        )
     
     generate main.exe
-        generate main.spec
+        pyinstaller --onefile --add-data "config;config" main.py
