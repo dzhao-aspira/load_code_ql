@@ -2,7 +2,7 @@
 
 import xlsxwriter
 
-from util.utils import getCurrentStartDate
+from util.utils import getCurrentStartDate, loadIgnoreList
 
 def createFile():
     currentDate = getCurrentStartDate()
@@ -101,12 +101,15 @@ def addSeries(name, firstRow, startRow, col, chart, sheetName):
         'name': name,
         'categories': [sheetName, firstRow + 3, 0, startRow - 1, 0],
         'values':     [sheetName, firstRow + 3, col, startRow - 1, col],
+        'marker':     {'type': 'circle', 'size': 7, 'fill': {'color': '#FAD7A0'}}
     })
 
 def writeDetail(repo, workbook):
     print(f"Write Detail for {repo['repo']}")
     currentSheet = createSheet(workbook, repo['repo'])
-    header = ['Number', 'State', 'Level', 'Create Date', 'Fixed Date', 'Dismiss Date', 'Dismiss By','Url', 'Dismiss Note']
+    header = [
+        'NUMBER', 'STATUS', 'LEVEL', 'RULE', 'CREATE DATE', 'FIXED DATE', 'LOCATION', 'URL', 'DESCRIPTION', 'DISMISS DATE', 'DISMISS BY', 'DISMISS NOTE'
+        ]
 
     cell_format = workbook.add_format({
         'bold': True,
@@ -118,8 +121,11 @@ def writeDetail(repo, workbook):
     for i, value in enumerate(header):
         currentSheet.write(0, i, value, cell_format)
     currentSheet.set_column(0, 2, 10)
-    currentSheet.set_column(3, 6, 20)
-    currentSheet.set_column(7, 8, 75)
+    currentSheet.set_column(3, 3, 45)
+    currentSheet.set_column(4, 5, 20)
+    currentSheet.set_column(6, 6, 75)
+    currentSheet.set_column(7, 8, 60)
+    currentSheet.set_column(9, 11, 20)
 
     contents = []
     for item in repo['items']:
@@ -130,8 +136,75 @@ def writeDetail(repo, workbook):
         if item['dismissedDate'] is not None:
             dismissDate = item['dismissedDate'].strftime('%y-%m-%d %H:%M:%S')
         createDate = item['createDate'].strftime('%y-%m-%d %H:%M:%S')
-        temp_row = [item['number'],item['state'],item['security_severity_level'], createDate, fixedDate, dismissDate, item['dismissedBy'] ,item['url'], item['dismissedReason']]
+        location = item['location'] + ':' + str(item['line'])
+        temp_row = [
+            item['number'],
+            item['state'],
+            item['security_severity_level'], 
+            item['rule'],
+            createDate, 
+            fixedDate, 
+            location,
+            item['url'],
+            item['description'],
+            dismissDate, 
+            item['dismissedBy'],
+            item['dismissedReason']
+            ]
         contents.append(temp_row)
     for i, row in enumerate(contents, start=1):
         for j, value in enumerate(row):
             currentSheet.write(i, j, value)
+
+
+def writeGroupByRuleSheet(resultByRule, workbook, groupByRuleSheet):
+    print(f"Write Group By Rule Sheet")
+    header = [
+        'RULE NAME', 'TOTAL COUNT', 'THIRD PARTY', 'NEED FIX COUNT', 'PROJECT'
+        ]
+
+    cell_format = workbook.add_format({
+        'bold': True,
+        'font_color': 'red',
+        'bg_color': 'yellow',
+        'border': 1
+    })
+    bold_format = workbook.add_format({'bold': True})
+
+    for i, value in enumerate(header):
+        groupByRuleSheet.write(0, i, value, cell_format)
+    groupByRuleSheet.set_column(0, 0, 45)
+    groupByRuleSheet.set_column(1, 3, 20)
+    groupByRuleSheet.set_column(4, 4, 30)
+
+    ignoreList = loadIgnoreList()
+
+    contents = []
+    totalCount = 0
+    totalThirdParty = 0
+    totalNeedFix = 0
+    for item in resultByRule:
+        for ignore in ignoreList:
+            if item['rule'] == ignore['rule'] and item['repo'] == ignore['repo']:
+                item['thirdParty'] = ignore['count']
+                break
+        temp_row = [
+            item['rule'],
+            item['totalCount'],
+            item['thirdParty'], 
+            item['totalCount'] - item['thirdParty'],
+            item['repo']
+        ]
+        totalCount = totalCount + item['totalCount']
+        totalThirdParty = totalThirdParty + item['thirdParty']
+        totalNeedFix = totalNeedFix + (item['totalCount'] - item['thirdParty'])
+        contents.append(temp_row)
+
+    total_row = ['Total', totalCount, totalThirdParty, totalNeedFix, '']
+    contents.append(total_row)
+    for i, row in enumerate(contents, start=1):
+        for j, value in enumerate(row):
+            if i == len(contents):
+                groupByRuleSheet.write(i, j, value, bold_format)
+            else:
+                groupByRuleSheet.write(i, j, value)

@@ -24,5 +24,4 @@ def getDay():
     return int(config.get('days'))
 
 def getToken():
-    token = os.getenv('GIT_API_KEY')
-    return token
+    return os.getenv('GIT_API_KEY')

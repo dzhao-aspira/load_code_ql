@@ -4,6 +4,8 @@ from datetime import timedelta, time, datetime
 
 from config.configuration import getDay
 
+from openpyxl import load_workbook
+
 def getDateArray(current_date):
     dates = []
     dates.insert(0, current_date)
@@ -117,4 +119,38 @@ def calAllTotal(repoIssues):
         total = issue['openCount'] + issue['closeCount']    
         item = [issue['repo'], issue['openCount'], issue['closeCount'], total]
         results.append(item)
+    return results
+
+def loadIgnoreList():
+    wb = load_workbook('ignore_issue_list.xlsx')
+    sheet = wb['Sheet1']
+    ignoreList = []
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        ignoreList.append({
+            'repo': row[2],
+            'rule': row[0],
+            'count': row[1]
+        })
+    return ignoreList
+
+def calCountByRule(repo):
+    results = []
+    for item in repo['items']:
+        if item['state'] == 'open':
+            rule = item['rule']
+            findOne = None
+            for result in results:
+                if result['rule'] == rule:
+                    findOne = result
+                    break
+            if findOne is None:
+                findOne = {
+                    'rule': rule,
+                    'repo': repo['repo'],
+                    'totalCount': 1,
+                    'thirdParty': 0
+                }
+                results.append(findOne)
+            else:
+                findOne['totalCount'] = findOne['totalCount'] + 1
     return results
