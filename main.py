@@ -5,7 +5,18 @@ from query.codeql import loadIssue
 from util.excelutils import createFile, createSheet, writeSummary, saveFile, writeDetail, writeTotal, writeGroupByRuleSheet
 
 def main():
-    repos = ['a1-app-orms', 'a1-app-ormsui', 'a1-app-licensing', 'a1-app-uwp', 'a1-app-ormsreports', 'a1-app-config', 'a1-app-cmty']
+    repos = [
+        'a1-app-orms', 
+        'a1-app-ormsui', 
+        'a1-app-licensing', 
+        'a1-app-uwp', 
+        'a1-app-ormsreports', 
+        'a1-app-config', 
+        'a1-app-cmty',
+        'a1-app-lfm',
+        'a1-app-tm',
+        'a1-app-dia'
+    ]
     #repos = ['a1-app-config']
     allSummary = []
     resultByRule = []
